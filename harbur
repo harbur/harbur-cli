@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e
+
+# Configure ENV variable to set on-premise solution
+export HARBUR_URL=${HARBUR_URL:-https://fvm.io}
+
+appRun () {
+  namespace=$(echo "$1" | cut -d':' -f1)
+  version=$(echo "$1" | cut -d':' -f2)
+  shift
+  args=$*
+
+  HARBUR_DIR=$HOME/.fvm/$namespace
+  mkdir -p $HARBUR_DIR
+  curl -s ${HARBUR_URL}/api/c/${namespace}/${version} > $HARBUR_DIR/docker-compose.yml
+  docker-compose -f $HARBUR_DIR/docker-compose.yml ${args}
+}
+
+appHelp () {
+  echo "Harbur CLI tool - container stacks management with Docker Compose."
+  echo ""
+  echo "Usage:"
+  echo "  harbur IMAGE COMMAND"
+  echo ""
+  echo "Download a docker-compose.yml and launch docker-compose command on it."
+  echo "If docker-compose.yml is already downloaded it is cached at ~/.harbur/ directory"
+  echo "IMAGE is defined by 'namespace/repo:version'"
+}
+
+
+if [ $# -gt 1 ]; then
+	appRun $*
+else
+	appHelp
+fi
+
+exit 0
