@@ -10,7 +10,7 @@ appRun () {
   shift
   args=$*
 
-  HARBUR_DIR=$HOME/.fvm/$namespace
+  HARBUR_DIR=$HOME/.harbur/$namespace
   mkdir -p $HARBUR_DIR
   curl -s ${HARBUR_URL}/api/c/${namespace}/${version} > $HARBUR_DIR/docker-compose.yml
   docker-compose -f $HARBUR_DIR/docker-compose.yml ${args}
