@@ -6,7 +6,13 @@ export HARBUR_URL=${HARBUR_URL:-https://fvm.io}
 
 appRun () {
   namespace=$(echo "$1" | cut -d':' -f1)
-  version=$(echo "$1" | cut -d':' -f2)
+  if [[ $1 == *:* ]]
+  then
+    version=$(echo "$1" | cut -d':' -f2)
+  else
+    version="latest"
+  fi
+
   shift
   args=$*
 
