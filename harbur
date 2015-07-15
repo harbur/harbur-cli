@@ -2,24 +2,41 @@
 set -e
 
 # Configure ENV variable to set on-premise solution
-export HARBUR_URL=${HARBUR_URL:-https://fvm.io}
+export HARBUR_URL=${HARBUR_URL:-https://cloud.harbur.io}
 
-appRun () {
-  namespace=$(echo "$1" | cut -d':' -f1)
-  if [[ $1 == *:* ]]
-  then
-    version=$(echo "$1" | cut -d':' -f2)
-  else
-    version="latest"
-  fi
+endpoint="s"
+command="docker-compose"
+OUTPUT_FILENAME="docker-compose.yml"
 
+if [[ $1 == '-f' ]]; then
+  endpoint="f"
+  command="fleetctl"
   shift
-  args=$*
+fi
 
+namespace=$(echo "$1" | cut -d':' -f1)
+username=$(echo "$namespace" | cut -d'/' -f1)
+title=$(echo "$namespace" | cut -d'/' -f2)
+if [[ $1 == *:* ]]
+then
+  version=$(echo "$1" | cut -d':' -f2)
+else
+  version="latest"
+fi
+
+shift
+args=$*
+
+if [[ $command == "fleetctl" ]]
+then
+  OUTPUT_FILENAME="${title}.service"
+fi
+appRun () {
   HARBUR_DIR=$HOME/.harbur/$namespace
   mkdir -p $HARBUR_DIR
-  curl -s ${HARBUR_URL}/api/s/${namespace}/${version} > $HARBUR_DIR/docker-compose.yml
-  docker-compose -f $HARBUR_DIR/docker-compose.yml ${args}
+  curl -s ${HARBUR_URL}/api/${endpoint}/${namespace}/${version} > ${HARBUR_DIR}/${OUTPUT_FILENAME}
+  cd ${HARBUR_DIR}
+  ${command} ${args}
 }
 
 appHelp () {
@@ -34,7 +51,7 @@ appHelp () {
 }
 
 
-if [ $# -gt 1 ]; then
+if [ $# -gt 0 ]; then
 	appRun $*
 else
 	appHelp
