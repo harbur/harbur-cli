@@ -31,10 +31,18 @@ if [[ $command == "fleetctl" ]]
 then
   OUTPUT_FILENAME="${title}.service"
 fi
+
+login () {
+  if [[ -n $HARBUR_USER ]]; then
+    curl -s -b ~/.harbur/cookies.txt -c ~/.harbur/cookies.txt --data "email=${HARBUR_USER}&password=${HARBUR_PASSWD}" ${HARBUR_URL}/api/login > /dev/null
+  fi
+}
+
 appRun () {
+  login
   HARBUR_DIR=$HOME/.harbur/$namespace
   mkdir -p $HARBUR_DIR
-  curl -s ${HARBUR_URL}/api/${endpoint}/${namespace}/${version} > ${HARBUR_DIR}/${OUTPUT_FILENAME}
+  curl -b ~/.harbur/cookies.txt -c ~/.harbur/cookies.txt -s ${HARBUR_URL}/api/${endpoint}/${namespace}/${version} > ${HARBUR_DIR}/${OUTPUT_FILENAME}
   cd ${HARBUR_DIR}
   ${command} ${args}
 }
